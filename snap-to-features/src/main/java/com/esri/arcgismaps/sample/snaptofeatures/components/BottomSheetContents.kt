@@ -54,116 +54,117 @@ fun SnapSettings(
     onSnapSourceChanged: (Boolean, Int) -> Unit = { _: Boolean, _: Int -> },
     onDismiss: () -> Unit = { }
 ) {
-    Column(Modifier.background(MaterialTheme.colorScheme.background)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 20.dp, 20.dp, 0.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                style = SampleTypography.titleMedium,
-                text = "Snap Settings",
-                color = MaterialTheme.colorScheme.primary
-            )
-            TextButton(
-                onClick = onDismiss
+    Surface(Modifier.background(MaterialTheme.colorScheme.background)) {
+        Column(Modifier.background(MaterialTheme.colorScheme.background)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp, 20.dp, 20.dp, 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Done")
-            }
-        }
-
-        // configure snapping settings
-        Surface(
-            modifier = Modifier.padding(20.dp),
-            tonalElevation = 1.dp,
-            shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Column(
-                modifier = Modifier.padding(14.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Text(
+                    style = SampleTypography.titleMedium,
+                    text = "Snap Settings",
+                    color = MaterialTheme.colorScheme.primary
+                )
+                TextButton(
+                    onClick = onDismiss
                 ) {
-                    Text(
-                        text = "Snapping",
-                        style = SampleTypography.bodyLarge
-                    )
-                }
-                Divider(color = MaterialTheme.colorScheme.primary, thickness = 0.5.dp)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "\t\tEnabled",
-                        style = SampleTypography.bodyLarge,
-                    )
-                    Switch(
-                        checked = isSnappingEnabled,
-                        onCheckedChange = {
-                            onSnappingChanged(it)
-                        }
-                    )
+                    Text(text = "Done")
                 }
             }
-        }
-
-        // configure snap source collection settings
-        Surface(
-            modifier = Modifier.padding(20.dp),
-            tonalElevation = 1.dp,
-            shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Column(
-                modifier = Modifier.padding(14.dp)
+            // configure snapping settings
+            Surface(
+                modifier = Modifier.padding(20.dp),
+                tonalElevation = 1.dp,
+                shape = RoundedCornerShape(20.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
-                Column {
-                    Row {
+                Column(
+                    modifier = Modifier.padding(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Text(
-                            modifier = Modifier.weight(12f),
-                            text = "Snap Sources",
+                            text = "Snapping",
+                            style = SampleTypography.bodyLarge
                         )
                     }
                     Divider(color = MaterialTheme.colorScheme.primary, thickness = 0.5.dp)
-                    // add a row for each snap source in the collection
-                    for (x in snapSourceList.indices) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "\t\tEnabled",
+                            style = SampleTypography.bodyLarge,
+                        )
+                        Switch(
+                            checked = isSnappingEnabled,
+                            onCheckedChange = {
+                                onSnappingChanged(it)
+                            }
+                        )
+                    }
+                }
+            }
+
+            // configure snap source collection settings
+            Surface(
+                modifier = Modifier.padding(20.dp),
+                tonalElevation = 1.dp,
+                shape = RoundedCornerShape(20.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(14.dp)
+                ) {
+                    Column {
+                        Row {
                             Text(
-                                modifier = Modifier.weight(1f),
-                                text = "\t\t${(snapSourceList[x].source as FeatureLayer).name}"
-                            )
-                            Switch(
-                                checked = isSnapSourceEnabled[x],
-                                onCheckedChange = { newValue ->
-                                    onSnapSourceChanged(newValue, x)
-                                }
+                                modifier = Modifier.weight(12f),
+                                text = "Snap Sources",
                             )
                         }
                         Divider(color = MaterialTheme.colorScheme.primary, thickness = 0.5.dp)
-                    }
-                }
-                Divider(thickness = 0.5.dp)
-                TextButton(
-                    modifier = Modifier.align(CenterHorizontally),
-                    onClick = {
+                        // add a row for each snap source in the collection
                         for (x in snapSourceList.indices) {
-                            onSnapSourceChanged(true, x)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = "\t\t${(snapSourceList[x].source as FeatureLayer).name}"
+                                )
+                                Switch(
+                                    checked = isSnapSourceEnabled[x],
+                                    onCheckedChange = { newValue ->
+                                        onSnapSourceChanged(newValue, x)
+                                    }
+                                )
+                            }
+                            Divider(color = MaterialTheme.colorScheme.primary, thickness = 0.5.dp)
                         }
                     }
-                )
-                {
-                    Text(text = "Enable All Sources")
+                    Divider(thickness = 0.5.dp)
+                    TextButton(
+                        modifier = Modifier.align(CenterHorizontally),
+                        onClick = {
+                            for (x in snapSourceList.indices) {
+                                onSnapSourceChanged(true, x)
+                            }
+                        }
+                    )
+                    {
+                        Text(text = "Enable All Sources")
+                    }
                 }
             }
         }

@@ -25,10 +25,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -44,13 +42,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.arcgismaps.geometry.GeometryType
 import com.arcgismaps.toolkit.geocompose.MapView
 import com.esri.arcgismaps.sample.sampleslib.components.BottomSheet
 import com.esri.arcgismaps.sample.sampleslib.components.MessageDialog
 import com.esri.arcgismaps.sample.sampleslib.components.SampleTopAppBar
+import com.esri.arcgismaps.sample.snaptofeatures.R
 import com.esri.arcgismaps.sample.snaptofeatures.components.MapViewModel
 import com.esri.arcgismaps.sample.snaptofeatures.components.SnapSettings
 
@@ -69,13 +70,13 @@ fun MainScreen (sampleName: String) {
     val graphicsOverlayCollection = listOf(mapViewModel.graphicsOverlay)
 
     Scaffold(
-        topBar = { SampleTopAppBar(title = sampleName) },
         content = {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
             ) {
+                SampleTopAppBar(title = sampleName)
                 MapView(
                     modifier = Modifier
                         .fillMaxSize()
@@ -139,11 +140,13 @@ fun MainScreen (sampleName: String) {
                             )
                         }
                     }
+
+                    val vector = ImageVector
                     IconButton(onClick = { mapViewModel.editorUndo() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Undo")
+                        Icon(vector.vectorResource(R.drawable.undo), contentDescription = "Undo")
                     }
                     IconButton(onClick = { mapViewModel.editorStopped() }) {
-                        Icon(Icons.Default.Done, contentDescription = "Stop")
+                        Icon(vector.vectorResource(R.drawable.save), contentDescription = "Save")
                     }
                     IconButton(onClick = { mapViewModel.clearGraphics() }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Clear")
