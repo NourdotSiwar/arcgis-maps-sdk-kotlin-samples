@@ -102,8 +102,7 @@ class MapViewModel(
                         )
                     }
                 }
-                // call syncSourceSettings() to synchronise the snap source collection with
-                // the Map's operational layers
+                // synchronise the snap source collection with the Map's operational layers
                 geometryEditor.snapSettings.syncSourceSettings()
                 // populate the snapSourceCheckedState list with default values
                 geometryEditor.snapSettings.sourceSettings.forEach {
@@ -185,7 +184,7 @@ class MapViewModel(
             else -> {
                 messageDialogVM.showMessageDialog(
                     "Error",
-                    "The current geometry edit cannot be saved."
+                    "Cannot apply symbology to the current geometry."
                 )
             }
         }
@@ -268,7 +267,7 @@ class MapViewModel(
         if (geometryEditor.snapSettings.sourceSettings.isEmpty()) {
             messageDialogVM.showMessageDialog(
                 "Information",
-                "Layers are still loading. Please try again later."
+                "Layers are still loading. \nPlease try again in a moment."
             )
         } else {
             isBottomSheetVisible.value = true
