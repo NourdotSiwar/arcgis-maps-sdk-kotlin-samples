@@ -21,9 +21,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
-import com.arcgismaps.data.FeatureQueryResult
-import com.arcgismaps.data.QueryParameters
 import com.arcgismaps.data.ServiceGeodatabase
+import com.arcgismaps.geometry.Envelope
 import com.arcgismaps.geometry.GeometryType
 import com.arcgismaps.geometry.Multipoint
 import com.arcgismaps.geometry.Point
@@ -39,10 +38,13 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.geometryeditor.GeometryEditor
 import com.arcgismaps.mapping.view.geometryeditor.GeometryEditorStyle
+import com.arcgismaps.mapping.view.geometryeditor.SnapSourceSettings
 import com.arcgismaps.toolkit.geocompose.MapViewProxy
 import com.esri.arcgismaps.sample.sampleslib.components.MessageDialogViewModel
 import com.esri.arcgismaps.sample.snaptofeatures.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class MapViewModel(
@@ -66,7 +68,13 @@ class MapViewModel(
     // create a messageDialogViewModel to handle dialog interactions
     val messageDialogVM: MessageDialogViewModel = MessageDialogViewModel()
 
-    // create boolean flags to track the state of the bottom sheet and snap settings
+    // create a list to be used for displaying the snap sources in the bottom sheet
+    private val _snapSourceSettingsList = MutableStateFlow(listOf<SnapSourceSettings>())
+    val snapSourceList: StateFlow<List<SnapSourceSettings>> = _snapSourceSettingsList
+
+    // boolean flags to track the state of the geometry editor, snap settings, and UI components
+    val isCreateButtonEnabled = mutableStateOf(true)
+    val isSnapSettingsButtonEnabled = mutableStateOf(false)
     val isBottomSheetVisible = mutableStateOf(false)
     val snappingCheckedState = mutableStateOf(false)
     val snapSourceCheckedState = mutableStateListOf(false)
@@ -78,11 +86,10 @@ class MapViewModel(
         sampleCoroutineScope.launch {
             // set the map's viewpoint to Naperville, Illinois
             mapViewProxy.setViewpointCenter(Point(-9812798.0, 5126406.0), 2000.0)
-
             // create a service geodatabase from the uri and load it
             serviceGeodatabase = ServiceGeodatabase(application.getString(R.string.service_url))
             serviceGeodatabase.load().onSuccess {
-                for (layerID in serviceGeodatabase.serviceInfo?.layerInfos?.indices!!) {
+                for (layerID in serviceGeodatabase.serviceInfo?.layerInfos?.indices!!.reversed()) {
                     // create a feature layer from the service feature table
                     val featureTable = serviceGeodatabase.getTable(layerID.toLong())
                     val featureLayer = FeatureLayer.createWithFeatureTable(featureTable!!)
@@ -91,10 +98,6 @@ class MapViewModel(
                     featureLayer.load().onSuccess {
                         // add the layer to the Map's operational layers
                         map.operationalLayers.add(featureLayer)
-                        // set the line symbology when the lateral layer is loaded
-                        if (featureLayer.name == "Lateral") {
-                            setGeometryEditorStyle(featureLayer)
-                        }
                     }.onFailure { error ->
                         messageDialogVM.showMessageDialog(
                             error.message.toString(),
@@ -104,7 +107,10 @@ class MapViewModel(
                 }
                 // synchronise the snap source collection with the Map's operational layers
                 geometryEditor.snapSettings.syncSourceSettings()
-                // populate the snapSourceCheckedState list with default values
+                // update the UI list of snap sources and enable the snap settings button
+                _snapSourceSettingsList.value = geometryEditor.snapSettings.sourceSettings
+                isSnapSettingsButtonEnabled.value = true
+                // populate UI list of checked values to default values
                 geometryEditor.snapSettings.sourceSettings.forEach {
                     snapSourceCheckedState.add(it.isEnabled)
                 }
@@ -136,6 +142,7 @@ class MapViewModel(
                         identifiedGraphic = graphicsResult[0].graphics[0]
                         identifiedGraphic.isSelected = true
                         identifiedGraphic.geometry?.let { geometryEditor.start(it) }
+                        isCreateButtonEnabled.value = false
                     }
                 }
                 identifiedGraphic.geometry = null
@@ -150,6 +157,7 @@ class MapViewModel(
     fun editorStarted(type: GeometryType) {
         if (!geometryEditor.isStarted.value) {
             geometryEditor.start(type)
+            isCreateButtonEnabled.value = false
         }
     }
 
@@ -165,6 +173,7 @@ class MapViewModel(
                 createNewGraphic()
             }
         }
+        isCreateButtonEnabled.value = true
     }
 
     /**
@@ -173,20 +182,15 @@ class MapViewModel(
     private fun createNewGraphic() {
         // stop the geometryEditor and store the geometry
         val geometry = geometryEditor.stop()
-        // create a new graphic from the geometry
         val graphic = Graphic(geometry)
-        // apply symbology to the graphic based on the geometry
+
+        // apply symbology to the graphic
         when (geometry!!) {
             is Point -> graphic.symbol = GeometryEditorStyle().vertexSymbol
             is Multipoint -> graphic.symbol = GeometryEditorStyle().vertexSymbol
-            is Polyline -> graphic.symbol = geometryEditor.tool.style.lineSymbol
+            is Polyline -> graphic.symbol = GeometryEditorStyle().lineSymbol
             is Polygon -> graphic.symbol = GeometryEditorStyle().fillSymbol
-            else -> {
-                messageDialogVM.showMessageDialog(
-                    "Error",
-                    "Cannot apply symbology to the current geometry."
-                )
-            }
+            is Envelope -> graphic.symbol = GeometryEditorStyle().lineSymbol
         }
         // add the graphic to the graphicOverlay and unselect it
         graphicsOverlay.graphics.add(graphic)
@@ -211,6 +215,7 @@ class MapViewModel(
         } else {
             graphicsOverlay.graphics.clear()
         }
+        isCreateButtonEnabled.value = true
     }
 
     /**
@@ -231,29 +236,6 @@ class MapViewModel(
     }
 
     /**
-     * Set the GeometryEditor LineSymbol to the queried line feature symbol.
-     */
-    private fun setGeometryEditorStyle(layer: FeatureLayer) {
-        // create query parameters
-        val queryParameters = QueryParameters()
-        queryParameters.whereClause = "1=1"
-
-        sampleCoroutineScope.launch {
-            // query for all features in the lateral layer
-            val featureQueryResult = layer.featureTable?.queryFeatures(queryParameters)?.getOrElse {
-                messageDialogVM.showMessageDialog(it.message.toString(), it.cause.toString())
-            } as FeatureQueryResult
-            // get a feature from the result and the renderer from the layer
-            val feature = featureQueryResult.firstOrNull()
-            val renderer = layer.renderer
-            // set the geometry editor line symbol
-            geometryEditor.tool.style.lineSymbol = feature?.let {
-                renderer?.getSymbol(it, true)
-            }
-        }
-    }
-
-    /**
      * Dismiss the BottomSheet.
      */
     fun dismissBottomSheet() {
@@ -264,13 +246,6 @@ class MapViewModel(
      * Show the BottomSheet.
      */
     fun showBottomSheet() {
-        if (geometryEditor.snapSettings.sourceSettings.isEmpty()) {
-            messageDialogVM.showMessageDialog(
-                "Information",
-                "Layers are still loading. \nPlease try again in a moment."
-            )
-        } else {
-            isBottomSheetVisible.value = true
-        }
+        isBottomSheetVisible.value = true
     }
 }

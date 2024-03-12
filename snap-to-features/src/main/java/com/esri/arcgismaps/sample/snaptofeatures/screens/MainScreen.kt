@@ -38,6 +38,7 @@ import com.arcgismaps.mapping.view.MapViewInteractionOptions
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -98,14 +99,12 @@ fun MainScreen (sampleName: String) {
                     Box(
                         modifier = Modifier
                     ) {
-                        IconButton(onClick = {
-                            if (!mapViewModel.geometryEditor.isStarted.value) {
-                                expanded = !expanded
-                            }
-                        }) {
+                        IconButton(
+                            enabled = mapViewModel.isCreateButtonEnabled.value,
+                            onClick = { expanded = !expanded }
+                        ) {
                             Icon(imageVector = Icons.Default.Create, contentDescription = "Start")
                         }
-                        // display a drop down menu to select the geometry type
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
@@ -140,7 +139,6 @@ fun MainScreen (sampleName: String) {
                             )
                         }
                     }
-
                     val vector = ImageVector
                     IconButton(onClick = { mapViewModel.editorUndo() }) {
                         Icon(vector.vectorResource(R.drawable.undo), contentDescription = "Undo")
@@ -155,14 +153,12 @@ fun MainScreen (sampleName: String) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ){
-                        TextButton(onClick = { mapViewModel.showBottomSheet() }
-                        ) {
-                            Text(text = "Snap Settings")
-                        }
+                        TextButton(
+                            enabled = mapViewModel.isSnapSettingsButtonEnabled.value,
+                            onClick = { mapViewModel.showBottomSheet() }
+                        ) { Text(text = "Snap Settings") }
                     }
                 }
-
-                // display a dialog if the sample encounters an error
                 mapViewModel.messageDialogVM.apply {
                     if (dialogStatus) {
                         MessageDialog(
@@ -173,12 +169,11 @@ fun MainScreen (sampleName: String) {
                     }
                 }
             }
-            // display a bottom sheet to configure snap settings
             BottomSheet(isVisible = mapViewModel.isBottomSheetVisible.value) {
                 SnapSettings(
                     onSnappingChanged = mapViewModel::snappingEnabledStatus,
                     isSnappingEnabled = mapViewModel.snappingCheckedState.value,
-                    snapSourceList = mapViewModel.geometryEditor.snapSettings.sourceSettings,
+                    snapSourceList = mapViewModel.snapSourceList.collectAsState(),
                     onSnapSourceChanged = mapViewModel::sourceEnabledStatus,
                     isSnapSourceEnabled = mapViewModel.snapSourceCheckedState
                 ) { mapViewModel.dismissBottomSheet() }
