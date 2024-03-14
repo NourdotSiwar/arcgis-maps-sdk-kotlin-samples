@@ -14,7 +14,7 @@
  *
  */
 
-package com.esri.arcgismaps.sample.snaptofeatures.screens
+package com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.screens
 
 import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
@@ -53,9 +53,9 @@ import com.arcgismaps.toolkit.geocompose.MapView
 import com.esri.arcgismaps.sample.sampleslib.components.BottomSheet
 import com.esri.arcgismaps.sample.sampleslib.components.MessageDialog
 import com.esri.arcgismaps.sample.sampleslib.components.SampleTopAppBar
-import com.esri.arcgismaps.sample.snaptofeatures.R
-import com.esri.arcgismaps.sample.snaptofeatures.components.MapViewModel
-import com.esri.arcgismaps.sample.snaptofeatures.components.SnapSettings
+import com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.R
+import com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.components.MapViewModel
+import com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.components.SnapSettings
 
 /**
  * Main screen layout for the sample app.

@@ -14,7 +14,7 @@
  *
  */
 
-package com.esri.arcgismaps.sample.snaptofeatures.components
+package com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

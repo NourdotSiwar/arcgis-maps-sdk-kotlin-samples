@@ -14,7 +14,7 @@
  *
  */
 
-package com.esri.arcgismaps.sample.snaptofeatures.components
+package com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.components
 
 import android.app.Application
 import android.util.Log
@@ -45,7 +45,7 @@ import com.arcgismaps.mapping.view.geometryeditor.GeometryEditorStyle
 import com.arcgismaps.mapping.view.geometryeditor.SnapSourceSettings
 import com.arcgismaps.toolkit.geocompose.MapViewProxy
 import com.esri.arcgismaps.sample.sampleslib.components.MessageDialogViewModel
-import com.esri.arcgismaps.sample.snaptofeatures.R
+import com.esri.arcgismaps.sample.reticleprototypesnaptofeatures.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
