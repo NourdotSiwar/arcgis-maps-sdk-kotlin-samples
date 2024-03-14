@@ -15,7 +15,15 @@ dependencyResolutionManagement {
         maven { url = uri("https://esri.jfrog.io/artifactory/arcgis") }
         maven { url = uri("https://olympus.esri.com/artifactory/arcgisruntime-repo/") }
     }
+
+    versionCatalogs {
+        create("sdklibs") {
+            from(files("../kotlin/android-api/gradle/sdklibs.versions.toml"))
+        }
+    }
 }
+
+includeBuild("../kotlin/android-api")
 
 rootDir.listFiles()?.forEach {
     if (it.isDirectory && File(it, "build.gradle.kts").exists()) {

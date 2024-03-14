@@ -29,7 +29,7 @@ multidexVersion = "2.0.1"
 materialVersion = "1.7.0"
 androidBrowserVersion = "1.5.0"
 # Plugin versions
-gradleVersion = "8.1.1"
+gradleVersion = "8.2.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "gradleVersion" }
