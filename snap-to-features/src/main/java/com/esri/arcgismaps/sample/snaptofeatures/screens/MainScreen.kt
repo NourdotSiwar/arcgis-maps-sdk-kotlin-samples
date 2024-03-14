@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import com.arcgismaps.PrototypeMode
 import com.arcgismaps.geometry.GeometryType
 import com.arcgismaps.toolkit.geocompose.MapView
 import com.esri.arcgismaps.sample.sampleslib.components.BottomSheet
@@ -70,6 +71,9 @@ fun MainScreen (sampleName: String) {
     // the collection of graphics overlays used by the MapView
     val graphicsOverlayCollection = listOf(mapViewModel.graphicsOverlay)
 
+    val prototypeMode by mapViewModel.prototypeMode.collectAsState()
+    val isEditorStarted by mapViewModel.geometryEditor.isStarted.collectAsState()
+
     Scaffold(
         content = {
             Column(
@@ -77,7 +81,16 @@ fun MainScreen (sampleName: String) {
                     .fillMaxSize()
                     .padding(it)
             ) {
-                SampleTopAppBar(title = sampleName)
+                SampleTopAppBar(title = sampleName) {
+                    IconButton(
+                        enabled = isEditorStarted && prototypeMode == PrototypeMode.LONG_PRESS_PICK_UP,
+                        onClick = { mapViewModel.toggleReticle() }
+                    ) { Text("Ret.") }
+                    IconButton(
+                        enabled = !isEditorStarted,
+                        onClick = { mapViewModel.switchPrototypeMode() }
+                    ) { Text("Mde") }
+                }
                 MapView(
                     modifier = Modifier
                         .fillMaxSize()

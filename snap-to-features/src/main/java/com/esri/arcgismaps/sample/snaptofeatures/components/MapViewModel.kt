@@ -86,8 +86,12 @@ class MapViewModel(
 
     val prototypeMode: StateFlow<PrototypeMode> = ArcGISEnvironment.prototypeMode
 
-    fun setPrototypeMode(prototypeMode: PrototypeMode) {
-        ArcGISEnvironment.prototypeMode.value = prototypeMode
+    fun switchPrototypeMode() {
+        val current = ArcGISEnvironment.prototypeMode.value
+        ArcGISEnvironment.prototypeMode.value = when (current) {
+            PrototypeMode.LONG_PRESS_PICK_UP -> PrototypeMode.TAP_PICK_UP
+            PrototypeMode.TAP_PICK_UP -> PrototypeMode.LONG_PRESS_PICK_UP
+        }
     }
 
     fun toggleReticle() {
