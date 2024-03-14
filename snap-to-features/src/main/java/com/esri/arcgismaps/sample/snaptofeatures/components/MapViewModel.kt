@@ -17,10 +17,13 @@
 package com.esri.arcgismaps.sample.snaptofeatures.components
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
+import com.arcgismaps.ArcGISEnvironment
+import com.arcgismaps.PrototypeMode
 import com.arcgismaps.data.ServiceGeodatabase
 import com.arcgismaps.geometry.Envelope
 import com.arcgismaps.geometry.GeometryType
@@ -35,6 +38,7 @@ import com.arcgismaps.mapping.layers.FeatureLayer
 import com.arcgismaps.mapping.layers.FeatureTilingMode
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.arcgismaps.mapping.view.MapView
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.geometryeditor.GeometryEditor
 import com.arcgismaps.mapping.view.geometryeditor.GeometryEditorStyle
@@ -46,6 +50,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.reflect.KVisibility
 
 class MapViewModel(
     application: Application,
@@ -79,10 +84,28 @@ class MapViewModel(
     val snappingCheckedState = mutableStateOf(false)
     val snapSourceCheckedState = mutableStateListOf(false)
 
+    val prototypeMode: StateFlow<PrototypeMode> = ArcGISEnvironment.prototypeMode
+
+    fun setPrototypeMode(prototypeMode: PrototypeMode) {
+        ArcGISEnvironment.prototypeMode.value = prototypeMode
+    }
+
+    fun toggleReticle() {
+        // The reticle-toggling method is on the MapView (in the appropriate maps sdk branch) but
+        // we can't access the mapview here since it's all encapsulated by the toolkit.
+        // Use reflection to access it anyway. Hopefully our end users don't do the same :)
+        val mapViewField = MapViewProxy::class.java.getDeclaredField("mapView")
+        mapViewField.isAccessible = true
+        val mapView = mapViewField.get(mapViewProxy)
+        Log.i("xcv", "got mapView $mapView")
+        (mapView as MapView).toggleReticle()
+    }
+
     /**
      * Add the data layer to the map and sync the snap source collection.
      */
     init {
+        ArcGISEnvironment.prototypeMode.value = PrototypeMode.LONG_PRESS_PICK_UP
         sampleCoroutineScope.launch {
             // set the map's viewpoint to Naperville, Illinois
             mapViewProxy.setViewpointCenter(Point(-9812798.0, 5126406.0), 2000.0)
