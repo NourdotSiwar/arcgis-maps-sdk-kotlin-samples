@@ -67,6 +67,7 @@ class SceneViewModel(
         }
     }
 
+
     private fun addSurface() {
         scene.baseSurface.elevationSources.add(
             ArcGISTiledElevationSource("https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer")
