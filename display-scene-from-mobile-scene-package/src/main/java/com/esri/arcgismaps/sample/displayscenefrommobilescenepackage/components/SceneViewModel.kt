@@ -17,56 +17,83 @@
 package com.esri.arcgismaps.sample.displayscenefrommobilescenepackage.components
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import com.arcgismaps.Color
+import com.arcgismaps.geometry.Point
+import com.arcgismaps.geometry.SpatialReference
 import com.arcgismaps.mapping.ArcGISScene
-import com.arcgismaps.mapping.BasemapStyle
-import com.arcgismaps.mapping.MobileScenePackage
-import com.esri.arcgismaps.sample.displayscenefrommobilescenepackage.R
+import com.arcgismaps.mapping.ArcGISTiledElevationSource
+import com.arcgismaps.mapping.layers.Ogc3DTilesLayer
+import com.arcgismaps.mapping.symbology.SceneSymbolAnchorPosition
+import com.arcgismaps.mapping.symbology.SimpleMarkerSceneSymbol
+import com.arcgismaps.mapping.symbology.SimpleMarkerSceneSymbolStyle
+import com.arcgismaps.mapping.view.Graphic
+import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.arcgismaps.mapping.view.SurfacePlacement
 import com.esri.arcgismaps.sample.sampleslib.components.MessageDialogViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.io.File
 
 class SceneViewModel(
     private val application: Application,
-    private val sampleCoroutineScope: CoroutineScope
+    private val sampleCoroutineScope: CoroutineScope,
+    private val path: String
 ) : AndroidViewModel(application) {
-
     // create a base scene to be used to load the mobile scene package
-    var scene by mutableStateOf(ArcGISScene(BasemapStyle.ArcGISStreets))
+    var scene by mutableStateOf(ArcGISScene())
 
     // create a ViewModel to handle dialog interactions
     val messageDialogVM: MessageDialogViewModel = MessageDialogViewModel()
 
-    private val provisionPath: String by lazy {
-        application.getExternalFilesDir(null)?.path.toString() + File.separator + application.getString(
-            R.string.app_name
+    init {
+        addSurface()
+        loadOgc()
+    }
+
+    private fun loadOgc() {
+        val ogc3DTilesLayer = Ogc3DTilesLayer(path)
+        Log.d("MainScreen", path)
+        sampleCoroutineScope.launch {
+            ogc3DTilesLayer.load().onSuccess {
+                Log.d("MainScreen", ogc3DTilesLayer.loadStatus.value.toString())
+                scene.operationalLayers.add(ogc3DTilesLayer)
+            }.onFailure {
+                messageDialogVM.showMessageDialog(it.message.toString(), it.cause.toString())
+            }
+        }
+    }
+
+    private fun addSurface() {
+        scene.baseSurface.elevationSources.add(
+            ArcGISTiledElevationSource("https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer")
         )
     }
 
-    init {
-        createMobileScenePackage()
-    }
-
-    private fun createMobileScenePackage() {
-        // get the file path of the (.mspk) file
-        val filePath = provisionPath + application.getString(R.string.philadelphia_mspk)
-
-        // create the mobile scene package
-        val mobileScenePackage = MobileScenePackage(filePath)
-
-        sampleCoroutineScope.launch {
-            // load the mobile scene package
-            mobileScenePackage.load().onSuccess {
-                // update the mutable state holder with the first scene from the MobileScenePackage
-                scene = mobileScenePackage.scenes.first()
-            }.onFailure { error ->
-                // show the message dialog and pass the error message to be displayed in the dialog
-                messageDialogVM.showMessageDialog(error.message.toString(), error.cause.toString())
-            }
+    fun getGraphicsOverlay(): GraphicsOverlay {
+        // adds three graphics to the scene view to verify the 3D tiles layer is placed correctly.
+        val graphicsOverlay = GraphicsOverlay().apply {
+            sceneProperties.surfacePlacement = SurfacePlacement.Absolute
         }
+        val road1 = Point(8.02385, 46.3411, 712.613, SpatialReference.wgs84())
+        val road2 = Point(8.02567, 46.3429, 718.523, SpatialReference.wgs84())
+        val railroad1 = Point(8.02542, 46.3407, 712.205, SpatialReference.wgs84())
+        val simpleMarkerSceneSymbol = SimpleMarkerSceneSymbol(
+            SimpleMarkerSceneSymbolStyle.Diamond,
+            Color.green,
+            10.0,
+            10.0,
+            10.0,
+            SceneSymbolAnchorPosition.Center
+        )
+        with(graphicsOverlay.graphics) {
+            add(Graphic(road1, simpleMarkerSceneSymbol))
+            add(Graphic(road2, simpleMarkerSceneSymbol))
+            add(Graphic(railroad1, simpleMarkerSceneSymbol))
+        }
+        return graphicsOverlay
     }
 }
