@@ -17,7 +17,6 @@
 package com.esri.arcgismaps.sample.displayscenefrommobilescenepackage.components
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -36,7 +35,6 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.esri.arcgismaps.sample.sampleslib.components.MessageDialogViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class SceneViewModel(
     private val application: Application,
@@ -44,35 +42,16 @@ class SceneViewModel(
     private val path: String
 ) : AndroidViewModel(application) {
     // create a base scene to be used to load the mobile scene package
-    var scene by mutableStateOf(ArcGISScene())
-
-    // create a ViewModel to handle dialog interactions
-    val messageDialogVM: MessageDialogViewModel = MessageDialogViewModel()
-
-    init {
-        addSurface()
-        loadOgc()
-    }
-
-    private fun loadOgc() {
-        val ogc3DTilesLayer = Ogc3DTilesLayer(path)
-        Log.d("MainScreen", path)
-        sampleCoroutineScope.launch {
-            ogc3DTilesLayer.load().onSuccess {
-                Log.d("MainScreen", ogc3DTilesLayer.loadStatus.value.toString())
-                scene.operationalLayers.add(ogc3DTilesLayer)
-            }.onFailure {
-                messageDialogVM.showMessageDialog(it.message.toString(), it.cause.toString())
-            }
-        }
-    }
-
-
-    private fun addSurface() {
-        scene.baseSurface.elevationSources.add(
+    var scene by mutableStateOf(ArcGISScene().apply {
+        baseSurface.elevationSources.add(
             ArcGISTiledElevationSource("https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer")
         )
-    }
+        operationalLayers.add(Ogc3DTilesLayer(path))
+
+
+    })
+    // create a ViewModel to handle dialog interactions
+    val messageDialogVM: MessageDialogViewModel = MessageDialogViewModel()
 
     fun getGraphicsOverlay(): GraphicsOverlay {
         // adds three graphics to the scene view to verify the 3D tiles layer is placed correctly.

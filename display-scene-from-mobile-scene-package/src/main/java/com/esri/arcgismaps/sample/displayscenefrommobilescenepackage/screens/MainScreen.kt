@@ -17,6 +17,7 @@
 package com.esri.arcgismaps.sample.displayscenefrommobilescenepackage.screens
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -56,14 +57,17 @@ fun MainScreen(sampleName: String) {
         Point(8.021548309454653, 46.33754563822651, 945.7098963772878,
             SpatialReference.wgs84()), 31.998409907511512 , 68.28104607356202, 0.0)
 
+    val testCamera = Camera(
+        Point(8.024817349535722, 46.34082393909971, 774.3513218117878, SpatialReference.wgs84()),
+        19.515534618011674, 68.274013955829, 0.0
+    )
     LaunchedEffect(cameraController) {
         sceneViewProxy.apply {
-            setViewpointCamera(camera)
+            setViewpointCamera(testCamera)
         }
     }
 
     Scaffold(
-        topBar = { SampleTopAppBar(title = sampleName) },
         content = {
             Column(
                 modifier = Modifier
@@ -75,7 +79,10 @@ fun MainScreen(sampleName: String) {
                     modifier = Modifier.fillMaxSize(),
                     arcGISScene = sceneViewModel.scene,
                     graphicsOverlays = listOf(sceneViewModel.getGraphicsOverlay()),
-                    sceneViewProxy = sceneViewProxy
+                    sceneViewProxy = sceneViewProxy,
+                    onCurrentViewpointCameraChanged = {
+                        Log.d("MainScreen", "location: (${it.location.x}, ${it.location.y}, ${it.location.z}), heading: ${it.heading}, pitch: ${it.pitch}, roll: ${it.roll}")
+                    }
                 )
                 // display a dialog if the sample encounters an error
                 sceneViewModel.messageDialogVM.apply {
