@@ -41,10 +41,6 @@ class MainActivity : AppCompatActivity() {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
 
-    private val mapView by lazy {
-        activityMainBinding.mapView
-    }
-
     // to view the traffic layer in the portal, you must enter valid ArcGIS Online credentials.
     private val portal by lazy {
         Portal(getString(R.string.oauth_sample_portal_url), Portal.Connection.Authenticated)
@@ -69,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         )[OAuthUserSignInViewModel::class.java]
 
         lifecycle.addObserver(oAuthUserSignInViewModel)
-        lifecycle.addObserver(mapView)
+        //lifecycle.addObserver(mapView)
 
         setUpArcGISAuthenticationChallengeHandler(oAuthUserSignInViewModel)
 
@@ -79,11 +75,6 @@ class MainActivity : AppCompatActivity() {
                 MaterialAlertDialogBuilder(this@MainActivity).setMessage(
                     "Portal succeeded to load, portal user: ${portal.user?.username}"
                 ).show()
-                // authentication complete, display PortalItem
-                mapView.apply {
-                    visibility = View.VISIBLE
-                    map = ArcGISMap(PortalItem(portal.url))
-                }
             }.onFailure { throwable ->
                 // authentication failed, display error message
                 activityMainBinding.authFailedMessage.apply {
