@@ -80,11 +80,11 @@ class MapViewModel(private var application: Application) : AndroidViewModel(appl
     private val routeStops by lazy { mutableListOf<Stop>() }
     private var currentJob by mutableStateOf<Job?>(null)
     private var routeParameters: RouteParameters? = null
+    private var cachedRouteResult: RouteResult? = null
+    private var cachedRouteStops: List<Stop>? = null
     private val routeTask = RouteTask(
         url = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World"
     )
-    private var cachedRouteResult: RouteResult? = null
-    private var cachedRouteStops: List<Stop>? = null
 
     /**
      * Performing the following during the app's loading process.

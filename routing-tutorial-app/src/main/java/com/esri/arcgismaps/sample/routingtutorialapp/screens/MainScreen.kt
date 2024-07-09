@@ -142,7 +142,6 @@ fun MainScreen(sampleName: String) {
             )
 
 
-
             // This box holds the map and all Floating Action Buttons
             Box(
                 modifier = Modifier
@@ -172,7 +171,7 @@ fun MainScreen(sampleName: String) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
 
-                        ShowFloatingActionButtons(snackbarHostState = snackbarHostState,
+                        ActionButtonBar(snackbarHostState = snackbarHostState,
                             onRefreshButtonClicked = {
                                 mapViewModel.onRefreshButtonClicked(locationDisplay)
                             },
@@ -201,7 +200,6 @@ fun MainScreen(sampleName: String) {
                     onDismissRequest = { mapViewModel.showBottomSheet = false },
                     sheetState = bottomSheetState,
                     modifier = Modifier.fillMaxHeight(0.7f)
-                    //sheetMaxWidth = if (mapViewModel.showBottomSheet) ((LocalConfiguration.current.screenHeightDp) / 8).dp else 0.dp,
                     // Show only time, distance, and Directions label during peek height
                 ) {
                     // This row holds the time and distance of a route on the bottom sheet
@@ -218,7 +216,8 @@ fun MainScreen(sampleName: String) {
 
 
 @Composable
-private fun ShowFloatingActionButtons(
+private fun ActionButtonBar(
+    // FloatingActionButtons() - use nouns
     onRefreshButtonClicked: (LocationDisplay) -> Unit,
     onSearchRouteButtonClicked: (LocationDisplay) -> Unit,
     onGetCurrentLocationButtonClicked: (LocationDisplay) -> Unit,
@@ -311,8 +310,7 @@ private fun RouteOptions(
                 keyboardController?.hide()
                 onSearchStartingAddress()
             }),
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             enabled = isStartAddressTextFieldEnabled,
         )
 
@@ -335,8 +333,7 @@ private fun RouteOptions(
                 onSearchDestinationAddress()
 
             }),
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             enabled = isDestinationAddressTextFieldEnabled
         )
 
@@ -347,7 +344,9 @@ private fun RouteOptions(
                 onExpandedChange = { expanded = it },
             ) {
                 TextField(
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
                     value = text,
                     onValueChange = {},
                     readOnly = true,
@@ -366,10 +365,10 @@ private fun RouteOptions(
                             onClick = {
                                 text = option
                                 expanded = false
-                                when(text) {
+                                when (text) {
                                     "Shortest" -> onShortestRoute()
                                     "Quickest" -> onQuickestRoute()
-                                    else -> null
+                                    else -> println("")
                                 }
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
